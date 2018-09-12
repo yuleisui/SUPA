@@ -17,6 +17,7 @@ set(SOURCES
     Util/PTAStat.cpp
     Util/ThreadAPI.cpp
     Util/SVFModule.cpp
+    Util/ICFG.cpp
     MemoryModel/ConsG.cpp
     MemoryModel/LocationSet.cpp
     MemoryModel/LocMemModel.cpp
@@ -48,6 +49,7 @@ set(SOURCES
     WPA/AndersenWaveDiffWithType.cpp
     WPA/FlowSensitive.cpp
     WPA/FlowSensitiveStat.cpp
+    WPA/TypeAnalysis.cpp
     WPA/WPAPass.cpp
     DDA/ContextDDA.cpp
     DDA/DDAClient.cpp

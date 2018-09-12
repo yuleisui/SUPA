@@ -16,9 +16,6 @@
 #include <llvm/Analysis/AliasAnalysis.h>
 #include <llvm/Pass.h>
 
-class SVFG;
-class SVFGEdge;
-
 /*!
  * Demand-Driven Pointer Analysis.
  * This class performs various pointer analysis on the given module.

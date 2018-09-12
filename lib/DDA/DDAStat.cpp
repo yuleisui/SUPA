@@ -9,6 +9,8 @@
 #include "DDA/FlowDDA.h"
 #include "DDA/ContextDDA.h"
 #include "Util/AnalysisUtil.h"
+#include "MSSA/SVFGStat.h"
+
 #include <iomanip>
 
 using namespace llvm;

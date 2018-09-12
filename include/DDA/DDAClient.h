@@ -15,7 +15,7 @@
 #include "MemoryModel/PAG.h"
 #include "MemoryModel/PAGBuilder.h"
 #include "MemoryModel/PointerAnalysis.h"
-#include "MSSA/SVFGNode.h"
+#include "MSSA/SVFG.h"
 #include "Util/BasicTypes.h"
 #include "Util/CPPUtil.h"
 #include <llvm/IR/DataLayout.h>
