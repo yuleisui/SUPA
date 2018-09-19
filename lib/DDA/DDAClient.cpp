@@ -12,7 +12,6 @@
 #include "DDA/FlowDDA.h"
 #include <iostream>
 #include <iomanip>	// for std::setw
-#include <llvm/Support/CommandLine.h> // for tool output file
 
 using namespace llvm;
 using namespace analysisUtil;

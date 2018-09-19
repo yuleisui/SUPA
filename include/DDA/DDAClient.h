@@ -18,7 +18,6 @@
 #include "MSSA/SVFG.h"
 #include "Util/BasicTypes.h"
 #include "Util/CPPUtil.h"
-#include <llvm/IR/DataLayout.h>
 
 
 /**

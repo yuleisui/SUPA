@@ -8,7 +8,6 @@
 #include "DDA/FlowDDA.h"
 #include "DDA/DDAClient.h"
 #include "Util/AnalysisUtil.h"
-#include <llvm/Support/CommandLine.h>
 
 using namespace llvm;
 using namespace std;

@@ -13,8 +13,6 @@
 #include "MemoryModel/PointerAnalysis.h"
 #include "DDA/DDAClient.h"
 #include "Util/SCC.h"
-#include <llvm/Analysis/AliasAnalysis.h>
-#include <llvm/Pass.h>
 
 /*!
  * Demand-Driven Pointer Analysis.
