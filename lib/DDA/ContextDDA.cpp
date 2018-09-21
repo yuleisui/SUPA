@@ -9,10 +9,10 @@
 #include "DDA/FlowDDA.h"
 #include "DDA/DDAClient.h"
 
-using namespace llvm;
+using namespace SVFUtil;
 
-static cl::opt<unsigned long long> cxtBudget("cxtbg",  cl::init(10000),
-        cl::desc("Maximum step budget of context-sensitive traversing"));
+static llvm::cl::opt<unsigned long long> cxtBudget("cxtbg",  llvm::cl::init(10000),
+        llvm::cl::desc("Maximum step budget of context-sensitive traversing"));
 /*!
  * Constructor
  */
@@ -127,12 +127,12 @@ CxtPtSet ContextDDA::processGepPts(const GepSVFGNode* gep, const CxtPtSet& srcPt
         if (isBlkObjOrConstantObj(ptd.get_id()))
             tmpDstPts.set(ptd);
         else {
-            if (isa<VariantGepPE>(gep->getPAGEdge())) {
+            if (SVFUtil::isa<VariantGepPE>(gep->getPAGEdge())) {
                 setObjFieldInsensitive(ptd.get_id());
                 CxtVar var(ptd.get_cond(),getFIObjNode(ptd.get_id()));
                 tmpDstPts.set(var);
             }
-            else if (const NormalGepPE* normalGep = dyn_cast<NormalGepPE>(gep->getPAGEdge())) {
+            else if (const NormalGepPE* normalGep = SVFUtil::dyn_cast<NormalGepPE>(gep->getPAGEdge())) {
                 CxtVar var(ptd.get_cond(),getGepObjNode(ptd.get_id(),normalGep->getLocationSet()));
                 tmpDstPts.set(var);
             }
@@ -149,7 +149,7 @@ CxtPtSet ContextDDA::processGepPts(const GepSVFGNode* gep, const CxtPtSet& srcPt
     return tmpDstPts;
 }
 
-bool ContextDDA::testIndCallReachability(CxtLocDPItem& dpm, const llvm::Function* callee, llvm::CallSite cs) {
+bool ContextDDA::testIndCallReachability(CxtLocDPItem& dpm, const Function* callee, CallSite cs) {
     if(getPAG()->isIndirectCallSites(cs)) {
         NodeID id = getPAG()->getFunPtr(cs);
         PAGNode* node = getPAG()->getPAGNode(id);
@@ -171,10 +171,10 @@ bool ContextDDA::testIndCallReachability(CxtLocDPItem& dpm, const llvm::Function
 CallSiteID ContextDDA::getCSIDAtCall(CxtLocDPItem& dpm, const SVFGEdge* edge) {
 
     CallSiteID svfg_csId = 0;
-    if (const CallDirSVFGEdge* callEdge = dyn_cast<CallDirSVFGEdge>(edge))
+    if (const CallDirSVFGEdge* callEdge = SVFUtil::dyn_cast<CallDirSVFGEdge>(edge))
         svfg_csId = callEdge->getCallSiteId();
     else
-        svfg_csId = cast<CallIndSVFGEdge>(edge)->getCallSiteId();
+        svfg_csId = SVFUtil::cast<CallIndSVFGEdge>(edge)->getCallSiteId();
 
     CallSite cs = getSVFG()->getCallSite(svfg_csId);
     const Function* callee = edge->getDstNode()->getBB()->getParent();
@@ -193,10 +193,10 @@ CallSiteID ContextDDA::getCSIDAtCall(CxtLocDPItem& dpm, const SVFGEdge* edge) {
 CallSiteID ContextDDA::getCSIDAtRet(CxtLocDPItem& dpm, const SVFGEdge* edge) {
 
     CallSiteID svfg_csId = 0;
-    if (const RetDirSVFGEdge* retEdge = dyn_cast<RetDirSVFGEdge>(edge))
+    if (const RetDirSVFGEdge* retEdge = SVFUtil::dyn_cast<RetDirSVFGEdge>(edge))
         svfg_csId = retEdge->getCallSiteId();
     else
-        svfg_csId = cast<RetIndSVFGEdge>(edge)->getCallSiteId();
+        svfg_csId = SVFUtil::cast<RetIndSVFGEdge>(edge)->getCallSiteId();
 
     CallSite cs = getSVFG()->getCallSite(svfg_csId);
     const Function* callee = edge->getSrcNode()->getBB()->getParent();
@@ -250,7 +250,7 @@ bool ContextDDA::handleBKCondition(CxtLocDPItem& dpm, const SVFGEdge* edge) {
                 ///       to solve this later.
                 if (dpm.getCond().containCallStr(csId)) {
                     outOfBudgetQuery = true;
-                    analysisUtil::wrnMsg("Call site ID is contained in call string. Is this a recursion?");
+                    SVFUtil::wrnMsg("Call site ID is contained in call string. Is this a recursion?");
                     return false;
                 }
                 else {
@@ -279,7 +279,7 @@ bool ContextDDA::isHeapCondMemObj(const CxtVar& var, const StoreSVFGNode* store)
     const MemObj* mem = _pag->getObject(getPtrNodeID(var));
     assert(mem && "memory object is null??");
     if(mem->isHeap()) {
-        if(const Instruction* mallocSite = dyn_cast<Instruction>(mem->getRefVal())) {
+        if(const Instruction* mallocSite = SVFUtil::dyn_cast<Instruction>(mem->getRefVal())) {
             const Function* fun = mallocSite->getParent()->getParent();
             if(_ander->isInRecursion(fun))
                 return true;

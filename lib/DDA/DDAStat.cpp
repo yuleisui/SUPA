@@ -8,13 +8,12 @@
 #include "DDA/DDAStat.h"
 #include "DDA/FlowDDA.h"
 #include "DDA/ContextDDA.h"
-#include "Util/AnalysisUtil.h"
+#include "Util/SVFUtil.h"
 #include "MSSA/SVFGStat.h"
 
 #include <iomanip>
 
-using namespace llvm;
-using namespace analysisUtil;
+using namespace SVFUtil;
 
 DDAStat::DDAStat(FlowDDA* pta) : PTAStat(pta), flowDDA(pta), contextDDA(NULL) {
     initDefault();
@@ -194,7 +193,7 @@ void DDAStat::performStat() {
 
     for (PAG::const_iterator nodeIt = PAG::getPAG()->begin(), nodeEit = PAG::getPAG()->end(); nodeIt != nodeEit; nodeIt++) {
         PAGNode* pagNode = nodeIt->second;
-        if(isa<ObjPN>(pagNode)) {
+        if(SVFUtil::isa<ObjPN>(pagNode)) {
             if(getPTA()->isLocalVarInRecursiveFun(nodeIt->first)) {
                 localVarInRecursion.set(nodeIt->first);
             }

@@ -93,7 +93,7 @@ private:
  */
 class FunptrDDAClient : public DDAClient {
 private:
-    typedef std::map<NodeID,llvm::CallSite> VTablePtrToCallSiteMap;
+    typedef std::map<NodeID,CallSite> VTablePtrToCallSiteMap;
     VTablePtrToCallSiteMap vtableToCallSiteMap;
 public:
     FunptrDDAClient(SVFModule module) : DDAClient(module) {}
@@ -105,7 +105,7 @@ public:
         for(PAG::CallSiteToFunPtrMap::const_iterator it = pag->getIndirectCallsites().begin(),
                 eit = pag->getIndirectCallsites().end(); it!=eit; ++it) {
             if (cppUtil::isVirtualCallSite(it->first)) {
-                const llvm::Value *vtblPtr = cppUtil::getVCallVtblPtr(it->first);
+                const Value *vtblPtr = cppUtil::getVCallVtblPtr(it->first);
                 assert(pag->hasValueNode(vtblPtr) && "not a vtable pointer?");
                 NodeID vtblId = pag->getValueNode(vtblPtr);
                 addCandidate(vtblId);

@@ -13,35 +13,34 @@
 #include <iostream>
 #include <iomanip>	// for std::setw
 
-using namespace llvm;
-using namespace analysisUtil;
+using namespace SVFUtil;
 
-static cl::opt<bool> SingleLoad("single-load", cl::init(true),
-                                cl::desc("Count load pointer with same source operand as one query"));
+static llvm::cl::opt<bool> SingleLoad("single-load", llvm::cl::init(true),
+                                llvm::cl::desc("Count load pointer with same source operand as one query"));
 
-static cl::opt<bool> DumpFree("dump-free", cl::init(false),
-                              cl::desc("Dump use after free locations"));
+static llvm::cl::opt<bool> DumpFree("dump-free", llvm::cl::init(false),
+                              llvm::cl::desc("Dump use after free locations"));
 
-static cl::opt<bool> DumpUninitVar("dump-uninit-var", cl::init(false),
-                                   cl::desc("Dump uninitialised variables"));
+static llvm::cl::opt<bool> DumpUninitVar("dump-uninit-var", llvm::cl::init(false),
+                                   llvm::cl::desc("Dump uninitialised variables"));
 
-static cl::opt<bool> DumpUninitPtr("dump-uninit-ptr", cl::init(false),
-                                   cl::desc("Dump uninitialised pointers"));
+static llvm::cl::opt<bool> DumpUninitPtr("dump-uninit-ptr", llvm::cl::init(false),
+                                   llvm::cl::desc("Dump uninitialised pointers"));
 
-static cl::opt<bool> DumpSUPts("dump-su-pts", cl::init(false),
-                               cl::desc("Dump strong updates store"));
+static llvm::cl::opt<bool> DumpSUPts("dump-su-pts", llvm::cl::init(false),
+                               llvm::cl::desc("Dump strong updates store"));
 
-static cl::opt<bool> DumpSUStore("dump-su-store", cl::init(false),
-                                 cl::desc("Dump strong updates store"));
+static llvm::cl::opt<bool> DumpSUStore("dump-su-store", llvm::cl::init(false),
+                                 llvm::cl::desc("Dump strong updates store"));
 
-static cl::opt<bool> MallocOnly("malloc-only", cl::init(true),
-                                cl::desc("Only add tainted objects for malloc"));
+static llvm::cl::opt<bool> MallocOnly("malloc-only", llvm::cl::init(true),
+                                llvm::cl::desc("Only add tainted objects for malloc"));
 
-static cl::opt<bool> TaintUninitHeap("uninit-heap", cl::init(true),
-                                     cl::desc("detect uninitialized heap variables"));
+static llvm::cl::opt<bool> TaintUninitHeap("uninit-heap", llvm::cl::init(true),
+                                     llvm::cl::desc("detect uninitialized heap variables"));
 
-static cl::opt<bool> TaintUninitStack("uninit-stack", cl::init(true),
-                                      cl::desc("detect uninitialized stack variables"));
+static llvm::cl::opt<bool> TaintUninitStack("uninit-stack", llvm::cl::init(true),
+                                      llvm::cl::desc("detect uninitialized stack variables"));
 
 void DDAClient::answerQueries(PointerAnalysis* pta) {
 

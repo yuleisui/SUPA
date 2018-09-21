@@ -74,7 +74,7 @@ public:
     bool isHeapCondMemObj(const CxtVar& var, const StoreSVFGNode* store);
 
     /// refine indirect call edge
-    bool testIndCallReachability(CxtLocDPItem& dpm, const llvm::Function* callee, llvm::CallSite cs);
+    bool testIndCallReachability(CxtLocDPItem& dpm, const Function* callee, CallSite cs);
 
     /// get callsite id from call, return 0 if it is a spurious call edge
     CallSiteID getCSIDAtCall(CxtLocDPItem& dpm, const SVFGEdge* edge);
@@ -94,21 +94,21 @@ public:
     }
     /// Whether call/return inside recursion
     inline virtual bool isEdgeInRecursion(CallSiteID csId) {
-        const llvm::Function* caller = getPTACallGraph()->getCallerOfCallSite(csId);
-        const llvm::Function* callee = getPTACallGraph()->getCalleeOfCallSite(csId);
+        const Function* caller = getPTACallGraph()->getCallerOfCallSite(csId);
+        const Function* callee = getPTACallGraph()->getCalleeOfCallSite(csId);
         return inSameCallGraphSCC(caller, callee);
     }
     /// Update call graph.
     //@{
-    void updateCallGraphAndSVFG(const CxtLocDPItem& dpm,llvm::CallSite cs,SVFGEdgeSet& svfgEdges)
+    void updateCallGraphAndSVFG(const CxtLocDPItem& dpm,CallSite cs,SVFGEdgeSet& svfgEdges)
     {
         CallEdgeMap newEdges;
         resolveIndCalls(cs, getBVPointsTo(getCachedPointsTo(dpm)), newEdges);
         for (CallEdgeMap::const_iterator iter = newEdges.begin(),eiter = newEdges.end(); iter != eiter; iter++) {
-            llvm::CallSite newcs = iter->first;
+            CallSite newcs = iter->first;
             const FunctionSet & functions = iter->second;
             for (FunctionSet::const_iterator func_iter = functions.begin(); func_iter != functions.end(); func_iter++) {
-                const llvm::Function * func = *func_iter;
+                const Function * func = *func_iter;
                 getSVFG()->connectCallerAndCallee(newcs, func, svfgEdges);
             }
         }
@@ -117,8 +117,8 @@ public:
 
     /// Return TRUE if this edge is inside a SVFG SCC, i.e., src node and dst node are in the same SCC on the SVFG.
     inline bool edgeInCallGraphSCC(const SVFGEdge* edge) {
-        const llvm::BasicBlock* srcBB = edge->getSrcNode()->getBB();
-        const llvm::BasicBlock* dstBB = edge->getDstNode()->getBB();
+        const BasicBlock* srcBB = edge->getSrcNode()->getBB();
+        const BasicBlock* dstBB = edge->getDstNode()->getBB();
 
         if(srcBB && dstBB)
             return inSameCallGraphSCC(srcBB->getParent(),dstBB->getParent());
@@ -140,7 +140,7 @@ public:
 
         CxtVar var(dpm.getCond(),srcID);
         addDDAPts(pts,var);
-        DBOUT(DDDA, llvm::outs() << "\t add points-to target " << var << " to dpm ");
+        DBOUT(DDDA, SVFUtil::outs() << "\t add points-to target " << var << " to dpm ");
         DBOUT(DDDA, dpm.dump());
     }
 
@@ -164,7 +164,7 @@ public:
     }
     /// dump context call strings
     virtual inline void dumpContexts(const ContextCond& cxts) {
-        llvm::outs() << cxts.toString() << "\n";
+        SVFUtil::outs() << cxts.toString() << "\n";
     }
 
     virtual const std::string PTAName() const {

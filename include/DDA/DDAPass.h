@@ -18,7 +18,7 @@
  * Demand-Driven Pointer Analysis.
  * This class performs various pointer analysis on the given module.
  */
-class DDAPass: public llvm::ModulePass {
+class DDAPass: public ModulePass {
 
 public:
     /// Pass ID
@@ -27,32 +27,32 @@ public:
     typedef std::set<const SVFGEdge*> SVFGEdgeSet;
     typedef std::vector<PointerAnalysis*> PTAVector;
 
-    DDAPass() : llvm::ModulePass(ID), _pta(NULL), _client(NULL) {}
+    DDAPass() : ModulePass(ID), _pta(NULL), _client(NULL) {}
     ~DDAPass();
 
-    virtual inline void getAnalysisUsage(llvm::AnalysisUsage &au) const {
+    virtual inline void getAnalysisUsage(AnalysisUsage &au) const {
         // declare your dependencies here.
         /// do not intend to change the IR in this pass,
         au.setPreservesAll();
     }
 
-    virtual inline void* getAdjustedAnalysisPointer(llvm::AnalysisID id) {
+    virtual inline void* getAdjustedAnalysisPointer(AnalysisID id) {
         return this;
     }
 
     /// Interface expose to users of our pointer analysis, given Location infos
-    virtual inline llvm::AliasResult alias(const llvm::MemoryLocation &LocA, const llvm::MemoryLocation &LocB) {
+    virtual inline AliasResult alias(const MemoryLocation &LocA, const MemoryLocation &LocB) {
         return alias(LocA.Ptr, LocB.Ptr);
     }
 
     /// Interface expose to users of our pointer analysis, given Value infos
-    virtual llvm::AliasResult alias(const llvm::Value* V1,	const llvm::Value* V2);
+    virtual AliasResult alias(const Value* V1,	const Value* V2);
 
     /// We start from here
     virtual bool runOnModule(SVFModule module);
 
     /// We start from here
-    virtual bool runOnModule(llvm::Module& module) {
+    virtual bool runOnModule(Module& module) {
         return runOnModule(module);
     }
 
@@ -60,7 +60,7 @@ public:
     virtual void selectClient(SVFModule module);
 
     /// Pass name
-    virtual inline llvm::StringRef getPassName() const {
+    virtual inline StringRef getPassName() const {
         return "DDAPass";
     }
 

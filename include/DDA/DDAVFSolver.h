@@ -83,25 +83,25 @@ public:
     }
     // Dump cptsSet
     inline void dumpCPtSet(const CPtSet& cpts) const {
-        llvm::outs() << "{";
+        SVFUtil::outs() << "{";
         for(typename CPtSet::iterator it = cpts.begin(), eit = cpts.end(); it!=eit; ++it) {
-            llvm::outs() << (*it) << " ";
+            SVFUtil::outs() << (*it) << " ";
         }
-        llvm::outs() << "}\n";
+        SVFUtil::outs() << "}\n";
     }
     /// Compute points-to
     virtual const CPtSet& findPT(const DPIm& dpm) {
 
         if(isbkVisited(dpm)) {
             const CPtSet& cpts = getCachedPointsTo(dpm);
-            DBOUT(DDDA, llvm::outs() << "\t already backward visited dpm: ");
+            DBOUT(DDDA, SVFUtil::outs() << "\t already backward visited dpm: ");
             DBOUT(DDDA, dpm.dump());
-            DBOUT(DDDA, llvm::outs() << "\t return points-to: ");
+            DBOUT(DDDA, SVFUtil::outs() << "\t return points-to: ");
             DBOUT(DDDA, dumpCPtSet(cpts));
             return cpts;
         }
 
-        DBOUT(DDDA, llvm::outs() << "\t backward visit dpm: ");
+        DBOUT(DDDA, SVFUtil::outs() << "\t backward visit dpm: ");
         DBOUT(DDDA, dpm.dump());
         markbkVisited(dpm);
         addDpmToLoc(dpm);
@@ -124,33 +124,33 @@ protected:
         resolveFunPtr(dpm);
 
         const SVFGNode* node = dpm.getLoc();
-        if(llvm::isa<AddrSVFGNode>(node)) {
-            handleAddr(pts,dpm,llvm::cast<AddrSVFGNode>(node));
+        if(SVFUtil::isa<AddrSVFGNode>(node)) {
+            handleAddr(pts,dpm,SVFUtil::cast<AddrSVFGNode>(node));
         }
-        else if(llvm::isa<CopySVFGNode>(node) || llvm::isa<PHISVFGNode>(node)
-                || llvm::isa<ActualParmSVFGNode>(node) || llvm::isa<FormalParmSVFGNode>(node)
-                || llvm::isa<ActualRetSVFGNode>(node) || llvm::isa<FormalRetSVFGNode>(node)
-                || llvm::isa<NullPtrSVFGNode>(node)) {
+        else if(SVFUtil::isa<CopySVFGNode>(node) || SVFUtil::isa<PHISVFGNode>(node)
+                || SVFUtil::isa<ActualParmSVFGNode>(node) || SVFUtil::isa<FormalParmSVFGNode>(node)
+                || SVFUtil::isa<ActualRetSVFGNode>(node) || SVFUtil::isa<FormalRetSVFGNode>(node)
+                || SVFUtil::isa<NullPtrSVFGNode>(node)) {
             backtraceAlongDirectVF(pts,dpm);
         }
-        else if(llvm::isa<GepSVFGNode>(node)) {
+        else if(SVFUtil::isa<GepSVFGNode>(node)) {
             CPtSet gepPts;
             backtraceAlongDirectVF(gepPts,dpm);
-            unionDDAPts(pts, processGepPts(llvm::cast<GepSVFGNode>(node),gepPts));
+            unionDDAPts(pts, processGepPts(SVFUtil::cast<GepSVFGNode>(node),gepPts));
         }
-        else if(llvm::isa<LoadSVFGNode>(node)) {
+        else if(SVFUtil::isa<LoadSVFGNode>(node)) {
             CPtSet loadpts;
             startNewPTCompFromLoadSrc(loadpts,dpm);
             for(typename CPtSet::iterator it = loadpts.begin(), eit = loadpts.end(); it!=eit; ++it) {
                 backtraceAlongIndirectVF(pts,getDPImWithOldCond(dpm,*it,node));
             }
         }
-        else if(llvm::isa<StoreSVFGNode>(node)) {
+        else if(SVFUtil::isa<StoreSVFGNode>(node)) {
             if(isMustAlias(getLoadDpm(dpm),dpm)) {
-                DBOUT(DDDA, llvm::outs() << "+++must alias for load and store:");
+                DBOUT(DDDA, SVFUtil::outs() << "+++must alias for load and store:");
                 DBOUT(DDDA, getLoadDpm(dpm).dump());
                 DBOUT(DDDA, dpm.dump());
-                DBOUT(DDDA, llvm::outs() << "+++\n");
+                DBOUT(DDDA, SVFUtil::outs() << "+++\n");
                 DOSTAT(ddaStat->_NumOfMustAliases++);
                 backtraceToStoreSrc(pts,dpm);
             }
@@ -161,8 +161,8 @@ protected:
                     if(propagateViaObj(*it,getLoadCVar(dpm))) {
                         backtraceToStoreSrc(pts,getDPImWithOldCond(dpm,*it,node));
 
-                        if(isStrongUpdate(storepts,llvm::cast<StoreSVFGNode>(node))) {
-                            DBOUT(DDDA, llvm::outs() << "backward strong update for obj " << dpm.getCurNodeID() << "\n");
+                        if(isStrongUpdate(storepts,SVFUtil::cast<StoreSVFGNode>(node))) {
+                            DBOUT(DDDA, SVFUtil::outs() << "backward strong update for obj " << dpm.getCurNodeID() << "\n");
                             DOSTAT(addSUStat(dpm,node);)
                         }
                         else {
@@ -176,7 +176,7 @@ protected:
                 }
             }
         }
-        else if(llvm::isa<MRSVFGNode>(node)) {
+        else if(SVFUtil::isa<MRSVFGNode>(node)) {
             backtraceAlongIndirectVF(pts,dpm);
         }
         else
@@ -214,9 +214,9 @@ protected:
             DPTItemSet dpmSet(locIt->second.begin(), locIt->second.end());
             for(typename DPTItemSet::const_iterator it = dpmSet.begin(),eit = dpmSet.end(); it!=eit; ++it) {
                 const DPIm& dstDpm = *it;
-                if(!indirectCall && llvm::isa<IndirectSVFGEdge>(edge) && !llvm::isa<LoadSVFGNode>(edge->getDstNode())) {
+                if(!indirectCall && SVFUtil::isa<IndirectSVFGEdge>(edge) && !SVFUtil::isa<LoadSVFGNode>(edge->getDstNode())) {
                     if(dstDpm.getCurNodeID() == dpm.getCurNodeID()) {
-                        DBOUT(DDDA,llvm::outs() << "\t Recompute, forward from :");
+                        DBOUT(DDDA,SVFUtil::outs() << "\t Recompute, forward from :");
                         DBOUT(DDDA, dpm.dump());
                         DOSTAT(ddaStat->_NumOfStepInCycle++);
                         clearbkVisited(dstDpm);
@@ -225,9 +225,9 @@ protected:
                 }
                 else {
                     if(indirectCall)
-                        DBOUT(DDDA,llvm::outs() << "\t Recompute for indirect call from :");
+                        DBOUT(DDDA,SVFUtil::outs() << "\t Recompute for indirect call from :");
                     else
-                        DBOUT(DDDA,llvm::outs() << "\t Recompute forward from :");
+                        DBOUT(DDDA,SVFUtil::outs() << "\t Recompute forward from :");
                     DBOUT(DDDA, dpm.dump());
                     DOSTAT(ddaStat->_NumOfStepInCycle++);
                     clearbkVisited(dstDpm);
@@ -275,10 +275,10 @@ protected:
             return;
         const SVFGEdgeSet edgeSet(node->getInEdges());
         for (SVFGNode::const_iterator it = edgeSet.begin(), eit = edgeSet.end(); it != eit; ++it) {
-            if(const IndirectSVFGEdge* indirEdge = llvm::dyn_cast<IndirectSVFGEdge>(*it)) {
+            if(const IndirectSVFGEdge* indirEdge = SVFUtil::dyn_cast<IndirectSVFGEdge>(*it)) {
                 PointsTo& guard = const_cast<PointsTo&>(indirEdge->getPointsTo());
                 if(guard.test(obj)) {
-                    DBOUT(DDDA, llvm::outs() << "\t\t==backtrace indirectVF svfgNode " <<
+                    DBOUT(DDDA, SVFUtil::outs() << "\t\t==backtrace indirectVF svfgNode " <<
                           indirEdge->getDstID() << " --> " << indirEdge->getSrcID() << "\n");
                     backwardPropDpm(pts,oldDpm.getCurNodeID(),oldDpm,indirEdge);
                 }
@@ -290,8 +290,8 @@ protected:
         const SVFGNode* node = oldDpm.getLoc();
         const SVFGEdgeSet edgeSet(node->getInEdges());
         for (SVFGNode::const_iterator it = edgeSet.begin(), eit = edgeSet.end(); it != eit; ++it) {
-            if(const DirectSVFGEdge* dirEdge = llvm::dyn_cast<DirectSVFGEdge>(*it)) {
-                DBOUT(DDDA, llvm::outs() << "\t\t==backtrace directVF svfgNode " <<
+            if(const DirectSVFGEdge* dirEdge = SVFUtil::dyn_cast<DirectSVFGEdge>(*it)) {
+                DBOUT(DDDA, SVFUtil::outs() << "\t\t==backtrace directVF svfgNode " <<
                       dirEdge->getDstID() << " --> " << dirEdge->getSrcID() << "\n");
                 const SVFGNode* srcNode = dirEdge->getSrcNode();
                 backwardPropDpm(pts,getSVFG()->getLHSTopLevPtr(srcNode)->getId(),oldDpm,dirEdge);
@@ -302,9 +302,9 @@ protected:
     /// Backward traverse for top-level pointers of load/store statements
     ///@{
     inline void startNewPTCompFromLoadSrc(CPtSet& pts, const DPIm& oldDpm) {
-        const LoadSVFGNode* load = llvm::cast<LoadSVFGNode>(oldDpm.getLoc());
+        const LoadSVFGNode* load = SVFUtil::cast<LoadSVFGNode>(oldDpm.getLoc());
         const SVFGNode* loadSrc = getDefSVFGNode(load->getPAGSrcNode());
-        DBOUT(DDDA, llvm::outs() << "!##start new computation from loadSrc svfgNode " <<
+        DBOUT(DDDA, SVFUtil::outs() << "!##start new computation from loadSrc svfgNode " <<
               load->getId() << " --> " << loadSrc->getId() << "\n");
         const SVFGEdge* edge = getSVFG()->getSVFGEdge(loadSrc,load,SVFGEdge::IntraDirectVF);
         assert(edge && "Edge not found!!");
@@ -312,18 +312,18 @@ protected:
 
     }
     inline void startNewPTCompFromStoreDst(CPtSet& pts, const DPIm& oldDpm) {
-        const StoreSVFGNode* store = llvm::cast<StoreSVFGNode>(oldDpm.getLoc());
+        const StoreSVFGNode* store = SVFUtil::cast<StoreSVFGNode>(oldDpm.getLoc());
         const SVFGNode* storeDst = getDefSVFGNode(store->getPAGDstNode());
-        DBOUT(DDDA, llvm::outs() << "!##start new computation from storeDst svfgNode " <<
+        DBOUT(DDDA, SVFUtil::outs() << "!##start new computation from storeDst svfgNode " <<
               store->getId() << " --> " << storeDst->getId() << "\n");
         const SVFGEdge* edge = getSVFG()->getSVFGEdge(storeDst,store,SVFGEdge::IntraDirectVF);
         assert(edge && "Edge not found!!");
         backwardPropDpm(pts,store->getPAGDstNodeID(),oldDpm,edge);
     }
     inline void backtraceToStoreSrc(CPtSet& pts, const DPIm& oldDpm) {
-        const StoreSVFGNode* store = llvm::cast<StoreSVFGNode>(oldDpm.getLoc());
+        const StoreSVFGNode* store = SVFUtil::cast<StoreSVFGNode>(oldDpm.getLoc());
         const SVFGNode* storeSrc = getDefSVFGNode(store->getPAGSrcNode());
-        DBOUT(DDDA, llvm::outs() << "++backtrace to storeSrc from svfgNode " << getLoadDpm(oldDpm).getLoc()->getId() << " to "<<
+        DBOUT(DDDA, SVFUtil::outs() << "++backtrace to storeSrc from svfgNode " << getLoadDpm(oldDpm).getLoc()->getId() << " to "<<
               store->getId() << " to " << storeSrc->getId() <<"\n");
         const SVFGEdge* edge = getSVFG()->getSVFGEdge(storeSrc,store,SVFGEdge::IntraDirectVF);
         assert(edge && "Edge not found!!");
@@ -339,13 +339,13 @@ protected:
         /// handle context-/path- sensitivity
         if(handleBKCondition(dpm,edge)==false) {
             DOTIMESTAT(ddaStat->_TotalTimeOfBKCondition += DDAStat::getClk() - start);
-            DBOUT(DDDA, llvm::outs() << "\t!!! infeasible path svfgNode: " << edge->getDstID() << " --| " << edge->getSrcID() << "\n");
+            DBOUT(DDDA, SVFUtil::outs() << "\t!!! infeasible path svfgNode: " << edge->getDstID() << " --| " << edge->getSrcID() << "\n");
             DOSTAT(ddaStat->_NumOfInfeasiblePath++);
             return;
         }
 
         /// record the source of load dpm
-        if(llvm::isa<IndirectSVFGEdge>(edge))
+        if(SVFUtil::isa<IndirectSVFGEdge>(edge))
             addLoadDpmAndCVar(dpm,getLoadDpm(oldDpm),getLoadCVar(oldDpm));
 
         DOSTAT(ddaStat->_NumOfDPM++);
@@ -376,8 +376,8 @@ protected:
         const MemObj* obj = _pag->getObject(id);
         assert(obj && "object not found!!");
         if(obj->isStack()) {
-            if(const llvm::AllocaInst* local = llvm::dyn_cast<llvm::AllocaInst>(obj->getRefVal())) {
-                const llvm::Function* fun = local->getParent()->getParent();
+            if(const AllocaInst* local = SVFUtil::dyn_cast<AllocaInst>(obj->getRefVal())) {
+                const Function* fun = local->getParent()->getParent();
                 return _callGraphSCC->isInCycle(_callGraph->getCallGraphNode(fun)->getId());
             }
         }
@@ -392,8 +392,8 @@ protected:
     }
     /// resolve function pointer
     void resolveFunPtr(const DPIm& dpm) {
-        if(llvm::Instruction* callInst= getSVFG()->isCallSiteRetSVFGNode(dpm.getLoc())) {
-            llvm::CallSite cs = analysisUtil::getLLVMCallSite(callInst);
+        if(Instruction* callInst= getSVFG()->isCallSiteRetSVFGNode(dpm.getLoc())) {
+            CallSite cs = SVFUtil::getLLVMCallSite(callInst);
             if(_pag->isIndirectCallSites(cs)) {
                 NodeID funPtr = _pag->getFunPtr(cs);
                 DPIm funPtrDpm(dpm);
@@ -401,12 +401,12 @@ protected:
                 findPT(funPtrDpm);
             }
         }
-        else if(const llvm::Function* fun = getSVFG()->isFunEntrySVFGNode(dpm.getLoc())) {
+        else if(const Function* fun = getSVFG()->isFunEntrySVFGNode(dpm.getLoc())) {
             CallInstSet csSet;
             /// use pre-analysis call graph to approximate all potential callsites
             _ander->getPTACallGraph()->getIndCallSitesInvokingCallee(fun,csSet);
             for(CallInstSet::const_iterator it = csSet.begin(), eit = csSet.end(); it!=eit; ++it) {
-                llvm::CallSite cs = analysisUtil::getLLVMCallSite(*it);
+                CallSite cs = SVFUtil::getLLVMCallSite(*it);
                 NodeID funPtr = _pag->getFunPtr(cs);
                 DPIm funPtrDpm(dpm);
                 funPtrDpm.setLocVar(getSVFG()->getDefSVFGNode(_pag->getPAGNode(funPtr)),funPtr);
@@ -429,7 +429,7 @@ protected:
         return true;
     }
     /// Update call graph
-    virtual inline void updateCallGraphAndSVFG(const DPIm& dpm,llvm::CallSite cs,SVFGEdgeSet& svfgEdges) {}
+    virtual inline void updateCallGraphAndSVFG(const DPIm& dpm,CallSite cs,SVFGEdgeSet& svfgEdges) {}
     //@}
 
     ///Visited flags to avoid cycles
@@ -472,7 +472,7 @@ protected:
 
     /// Whether this is a top-level pointer statement
     inline bool isTopLevelPtrStmt(const SVFGNode* stmt) {
-        if (llvm::isa<StoreSVFGNode>(stmt) || llvm::isa<MRSVFGNode>(stmt))
+        if (SVFUtil::isa<StoreSVFGNode>(stmt) || SVFUtil::isa<MRSVFGNode>(stmt))
             return false;
         else
             return true;
@@ -482,10 +482,10 @@ protected:
         DPIm dpm(oldDpm);
         dpm.setLocVar(loc,getPtrNodeID(var));
 
-        if(llvm::isa<StoreSVFGNode>(loc))
+        if(SVFUtil::isa<StoreSVFGNode>(loc))
             addLoadDpmAndCVar(dpm,getLoadDpm(oldDpm),var);
 
-        if(llvm::isa<LoadSVFGNode>(loc))
+        if(SVFUtil::isa<LoadSVFGNode>(loc))
             addLoadDpmAndCVar(dpm,oldDpm,var);
 
         DOSTAT(ddaStat->_NumOfDPM++);

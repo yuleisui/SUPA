@@ -23,40 +23,40 @@
 
 using namespace llvm;
 
-static cl::opt<std::string> InputFilename(cl::Positional,
-        cl::desc("<input bitcode>"), cl::init("-"));
+static llvm::cl::opt<std::string> InputFilename(cl::Positional,
+        llvm::cl::desc("<input bitcode>"), llvm::cl::init("-"));
 
-static cl::opt<bool>
+static llvm::cl::opt<bool>
 StandardCompileOpts("std-compile-opts",
-                    cl::desc("Include the standard compile time optimizations"));
+                    llvm::cl::desc("Include the standard compile time optimizations"));
 
 //static cl::list<const PassInfo*, bool, PassNameParser>
-//PassList(cl::desc("Optimizations available:"));
+//PassList(llvm::cl::desc("Optimizations available:"));
 
-static cl::opt<bool> DAA("daa", cl::init(false),
-                         cl::desc("Demand-Driven Alias Analysis Pass"));
+static llvm::cl::opt<bool> DAA("daa", llvm::cl::init(false),
+                         llvm::cl::desc("Demand-Driven Alias Analysis Pass"));
 
-static cl::opt<bool> REGPT("dreg", cl::init(false),
-                           cl::desc("Demand-driven regular points-to analysis"));
+static llvm::cl::opt<bool> REGPT("dreg", llvm::cl::init(false),
+                           llvm::cl::desc("Demand-driven regular points-to analysis"));
 
-static cl::opt<bool> RFINEPT("dref", cl::init(false),
-                             cl::desc("Demand-driven refinement points-to analysis"));
+static llvm::cl::opt<bool> RFINEPT("dref", llvm::cl::init(false),
+                             llvm::cl::desc("Demand-driven refinement points-to analysis"));
 
-static cl::opt<bool> ENABLEFIELD("fdaa", cl::init(false),
-                                 cl::desc("enable field-sensitivity for demand-driven analysis"));
+static llvm::cl::opt<bool> ENABLEFIELD("fdaa", llvm::cl::init(false),
+                                 llvm::cl::desc("enable field-sensitivity for demand-driven analysis"));
 
-static cl::opt<bool> ENABLECONTEXT("cdaa", cl::init(false),
-                                   cl::desc("enable context-sensitivity for demand-driven analysis"));
+static llvm::cl::opt<bool> ENABLECONTEXT("cdaa", llvm::cl::init(false),
+                                   llvm::cl::desc("enable context-sensitivity for demand-driven analysis"));
 
-static cl::opt<bool> ENABLEFLOW("ldaa", cl::init(false),
-                                cl::desc("enable flow-sensitivity for demand-driven analysis"));
+static llvm::cl::opt<bool> ENABLEFLOW("ldaa", llvm::cl::init(false),
+                                llvm::cl::desc("enable flow-sensitivity for demand-driven analysis"));
 
 int main(int argc, char ** argv) {
 
     int arg_num = 0;
     char **arg_value = new char*[argc];
     std::vector<std::string> moduleNameVec;
-    analysisUtil::processArguments(argc, argv, arg_num, arg_value, moduleNameVec);
+    SVFUtil::processArguments(argc, argv, arg_num, arg_value, moduleNameVec);
     cl::ParseCommandLineOptions(arg_num, arg_value,
                                 "Demand-Driven Points-to Analysis\n");
 

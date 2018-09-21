@@ -46,7 +46,7 @@ public:
     virtual bool handleBKCondition(LocDPItem& dpm, const SVFGEdge* edge);
 
     /// refine indirect call edge
-    bool testIndCallReachability(LocDPItem& dpm, const llvm::Function* callee, CallSiteID csId);
+    bool testIndCallReachability(LocDPItem& dpm, const Function* callee, CallSiteID csId);
 
     /// Initialization of the analysis
     inline virtual void initialize(SVFModule module) {
@@ -85,7 +85,7 @@ public:
             srcID = getFIObjNode(srcID);
 
         addDDAPts(pts,srcID);
-        DBOUT(DDDA, llvm::outs() << "\t add points-to target " << srcID << " to dpm ");
+        DBOUT(DDDA, SVFUtil::outs() << "\t add points-to target " << srcID << " to dpm ");
         DBOUT(DDDA, dpm.dump());
     }
     /// processGep node
@@ -93,15 +93,15 @@ public:
 
     /// Update call graph.
     //@{
-    void updateCallGraphAndSVFG(const LocDPItem& dpm,llvm::CallSite cs,SVFGEdgeSet& svfgEdges)
+    void updateCallGraphAndSVFG(const LocDPItem& dpm,CallSite cs,SVFGEdgeSet& svfgEdges)
     {
         CallEdgeMap newEdges;
         resolveIndCalls(cs, getCachedPointsTo(dpm), newEdges);
         for (CallEdgeMap::const_iterator iter = newEdges.begin(),eiter = newEdges.end(); iter != eiter; iter++) {
-            llvm::CallSite newcs = iter->first;
+            CallSite newcs = iter->first;
             const FunctionSet & functions = iter->second;
             for (FunctionSet::const_iterator func_iter = functions.begin(); func_iter != functions.end(); func_iter++) {
-                const llvm::Function * func = *func_iter;
+                const Function * func = *func_iter;
                 getSVFG()->connectCallerAndCallee(newcs, func, svfgEdges);
             }
         }

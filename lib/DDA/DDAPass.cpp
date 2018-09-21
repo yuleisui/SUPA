@@ -13,41 +13,41 @@
 #include <sstream>
 #include <limits.h>
 
-using namespace llvm;
+using namespace SVFUtil;
 
 char DDAPass::ID = 0;
 
-static cl::opt<unsigned> maxPathLen("maxpath",  cl::init(100000),
-                                    cl::desc("Maximum path limit for DDA"));
+static llvm::cl::opt<unsigned> maxPathLen("maxpath",  llvm::cl::init(100000),
+                                    llvm::cl::desc("Maximum path limit for DDA"));
 
-static cl::opt<unsigned> maxContextLen("maxcxt",  cl::init(3),
-                                       cl::desc("Maximum context limit for DDA"));
+static llvm::cl::opt<unsigned> maxContextLen("maxcxt",  llvm::cl::init(3),
+                                       llvm::cl::desc("Maximum context limit for DDA"));
 
-static cl::opt<string> userInputQuery("query",  cl::init("all"),
-                                      cl::desc("Please specify queries by inputing their pointer ids"));
+static llvm::cl::opt<string> userInputQuery("query",  llvm::cl::init("all"),
+                                      llvm::cl::desc("Please specify queries by inputing their pointer ids"));
 
-static cl::opt<bool> insenRecur("inrecur", cl::init(false),
-                                cl::desc("Mark context insensitive SVFG edges due to function recursions"));
+static llvm::cl::opt<bool> insenRecur("inrecur", llvm::cl::init(false),
+                                llvm::cl::desc("Mark context insensitive SVFG edges due to function recursions"));
 
-static cl::opt<bool> insenCycle("incycle", cl::init(false),
-                                cl::desc("Mark context insensitive SVFG edges due to value-flow cycles"));
+static llvm::cl::opt<bool> insenCycle("incycle", llvm::cl::init(false),
+                                llvm::cl::desc("Mark context insensitive SVFG edges due to value-flow cycles"));
 
-static cl::opt<bool> printCPts("cpts", cl::init(false),
-                               cl::desc("Dump conditional points-to set "));
+static llvm::cl::opt<bool> printCPts("cpts", llvm::cl::init(false),
+                               llvm::cl::desc("Dump conditional points-to set "));
 
-static cl::opt<bool> printQueryPts("print-query-pts", cl::init(false),
-                                   cl::desc("Dump queries' conditional points-to set "));
+static llvm::cl::opt<bool> printQueryPts("print-query-pts", llvm::cl::init(false),
+                                   llvm::cl::desc("Dump queries' conditional points-to set "));
 
-static cl::opt<bool> WPANUM("wpanum", cl::init(false),
-                            cl::desc("collect WPA FS number only "));
+static llvm::cl::opt<bool> WPANUM("wpanum", llvm::cl::init(false),
+                            llvm::cl::desc("collect WPA FS number only "));
 
-static RegisterPass<DDAPass> DDAPA("dda", "Demand-driven Pointer Analysis Pass");
+static llvm::RegisterPass<DDAPass> DDAPA("dda", "Demand-driven Pointer Analysis Pass");
 
 /// register this into alias analysis group
 //static RegisterAnalysisGroup<AliasAnalysis> AA_GROUP(DDAPA);
 
-static cl::bits<PointerAnalysis::PTATY> DDASelected(cl::desc("Select pointer analysis"),
-        cl::values(
+static llvm::cl::bits<PointerAnalysis::PTATY> DDASelected(llvm::cl::desc("Select pointer analysis"),
+		llvm::cl::values(
             clEnumValN(PointerAnalysis::FlowS_DDA, "dfs", "Demand-driven flow sensitive analysis"),
             clEnumValN(PointerAnalysis::Cxt_DDA, "cxt", "Demand-driven context- flow- sensitive analysis")
         ));
@@ -121,7 +121,7 @@ void DDAPass::runPointerAnalysis(SVFModule module, u32_t kind)
         break;
     }
     default:
-        llvm::outs() << "This pointer analysis has not been implemented yet.\n";
+        outs() << "This pointer analysis has not been implemented yet.\n";
         break;
     }
 
@@ -154,13 +154,13 @@ void DDAPass::answerQueries(PointerAnalysis* pta) {
     DDAStat* stat = static_cast<DDAStat*>(pta->getStat());
     u32_t vmrss = 0;
     u32_t vmsize = 0;
-    analysisUtil::getMemoryUsageKB(&vmrss, &vmsize);
+    SVFUtil::getMemoryUsageKB(&vmrss, &vmsize);
     stat->setMemUsageBefore(vmrss, vmsize);
 
     _client->answerQueries(pta);
 
     vmrss = vmsize = 0;
-    analysisUtil::getMemoryUsageKB(&vmrss, &vmsize);
+    SVFUtil::getMemoryUsageKB(&vmrss, &vmsize);
     stat->setMemUsageAfter(vmrss, vmsize);
 }
 
@@ -275,7 +275,7 @@ void DDAPass::collectCxtInsenEdgeForVFCycle(PointerAnalysis* pta, const SVFG* sv
  * Return alias results based on our points-to/alias analysis
  * TODO: Need to handle PartialAlias and MustAlias here.
  */
-llvm::AliasResult DDAPass::alias(const Value* V1, const Value* V2) {
+AliasResult DDAPass::alias(const Value* V1, const Value* V2) {
     PAG* pag = _pta->getPAG();
 
     /// TODO: When this method is invoked during compiler optimizations, the IR
@@ -295,7 +295,7 @@ llvm::AliasResult DDAPass::alias(const Value* V1, const Value* V2) {
         return _pta->alias(V1,V2);
     }
 
-    return MayAlias;
+    return llvm::MayAlias;
 }
 
 /*!
